@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  test
+
+  Sample SAM Template for multi-routing-test
+
+Globals:
+  Function:
+    Timeout: 20
+
+Resources:
+  CustomRuntimeRoutingDemo:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: /Users/a1101580/IdeaProjects/custom-runtime-routing-demo/target/custom-runtime-routing-demo-0.0.1-SNAPSHOT-native-zip.zip
+      Handler: org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest
+      Runtime: provided
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Environment:
+        Variables:
+          logging_level_root: DEBUG
+          spring_cloud_function_definition: functionRouter # I have to explicitly set this property. Without this, the app was unable to find the default function to run
+          server_port: 8090
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+
+Outputs:
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
